@@ -1,0 +1,40 @@
+name: Test Pipeline
+
+# The guide's warm-up workflow. Small on purpose: it exists so your very
+# first commit produces a green run, a job graph and an artifact - the three
+# things the guide teaches you to find. Exercises bring their own workflows.
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Say hello
+        run: echo "The pipeline is alive"
+
+      - name: Produce a file
+        run: |
+          mkdir -p build
+          echo "built by run $GITHUB_RUN_NUMBER" > build/proof.txt
+
+      - name: Upload the proof
+        uses: actions/upload-artifact@v4
+        with:
+          name: proof
+          path: build/
+
+  check:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Download the proof
+        uses: actions/download-artifact@v4
+        with:
+          name: proof
+
+      - name: Read it
+        run: cat proof.txt
